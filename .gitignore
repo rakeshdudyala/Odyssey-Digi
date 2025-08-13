@@ -1,0 +1,14 @@
+# Yocto build artifacts and internal repos
+build/
+tmp/
+downloads/
+sstate-cache/
+*.log
+*.lock
+*.swp
+
+# Repo internals and nested Git folders
+.repo/
+sources/*/.git
+key
+key.pub
