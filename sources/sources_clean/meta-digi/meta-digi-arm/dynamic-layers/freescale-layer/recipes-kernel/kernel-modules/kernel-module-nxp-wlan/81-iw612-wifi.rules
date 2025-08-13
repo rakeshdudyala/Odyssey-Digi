@@ -1,2 +1,0 @@
-# Load IW612 wireless module (sdio)
-SUBSYSTEM=="sdio", ACTION=="add", ENV{MODALIAS}=="sdio:c00v0471d0205", RUN="/etc/udev/scripts/load_iw612.sh"

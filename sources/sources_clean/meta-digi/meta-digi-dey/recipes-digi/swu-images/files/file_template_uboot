@@ -1,5 +1,0 @@
-                {
-                    filename = "##FILE_NAME##";
-                    path = "##FILE_PATH##";
-                    sha256 = "$swupdate_get_sha256(##FILE_NAME##)";
-                }

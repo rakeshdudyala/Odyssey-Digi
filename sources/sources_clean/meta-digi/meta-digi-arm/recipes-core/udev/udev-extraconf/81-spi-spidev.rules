@@ -1,2 +1,0 @@
-# Skip loading Spidev module
-SUBSYSTEM=="spi", ACTION=="add", ENV{MODALIAS}=="spi:dh2228fv", RUN="/bin/true"

@@ -1,7 +1,0 @@
-DISTRO ?= '##DISTRO##'
-MACHINE ?= '##MACHINE##'
-
-IMAGE_INSTALL:append = " wpewebkit cog"
-
-require presets.conf
-include ../../local-host.conf

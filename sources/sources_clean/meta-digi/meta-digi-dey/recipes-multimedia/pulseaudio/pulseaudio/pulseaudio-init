@@ -1,4 +1,0 @@
-#!/bin/sh
-
-type journalctl >/dev/null 2>&1 && log_target=journal || log_target=syslog
-pulseaudio --system --daemon --log-target="${log_target}"

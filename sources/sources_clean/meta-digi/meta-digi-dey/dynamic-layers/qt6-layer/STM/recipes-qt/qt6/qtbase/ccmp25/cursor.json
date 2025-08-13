@@ -1,8 +1,0 @@
-{
- "device": "/dev/dri/card0",
- "outputs": [
-      { "name": "HDMI1", "mode": "1920x1080", "size": "1920x1080" }
- ],
- "hwcursor": false
-}
-
