@@ -1,0 +1,51 @@
+#!/bin/sh
+
+# Linux GPIOs on XBee lines
+XBEE_RESET_N_GPIO="##XBEE_RESET_N_GPIO##"
+XBEE_SLEEP_RQ_GPIO="##XBEE_SLEEP_RQ_GPIO##"
+
+# 1=chip name
+# 2=gpio offset
+xbee_reset() {
+	# Power cycle XBEE_RESET_N
+	gpioset "${1}" "${2}"=0
+	gpioset "${1}" "${2}"=1
+}
+
+# 1=chip name
+# 2=gpio offset
+xbee_no_sleep() {
+	# Set low XBEE_SLEEP_RQ
+	gpioset "${1}" "${2}"=0
+}
+
+xbee_iterate_list() {
+	for SLEEP in $(echo ${XBEE_SLEEP_RQ_GPIO} | sed "s/,/ /g"); do
+		# Do not quote command expansion (function expects two parameters)
+		xbee_no_sleep $(echo "${SLEEP}" | sed "s/@/ /g")
+	done
+
+	for RESET in $(echo ${XBEE_RESET_N_GPIO} | sed "s/,/ /g"); do
+		# Do not quote command expansion (function expects two parameters)
+		xbee_reset $(echo "${RESET}" | sed "s/@/ /g")
+	done
+}
+
+case "$1" in
+	start)
+		echo -n "Starting XBee hardware: "
+		xbee_iterate_list
+		echo "done."
+		;;
+	stop)
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+		;;
+esac

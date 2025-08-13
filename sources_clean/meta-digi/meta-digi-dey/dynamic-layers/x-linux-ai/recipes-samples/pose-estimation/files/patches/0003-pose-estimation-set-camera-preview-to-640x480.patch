@@ -1,0 +1,47 @@
+From: David Escalona <david.escalona@digi.com>
+Date: Mon, 16 Sep 2024 18:47:43 +0200
+Subject: [PATCH 3/3] pose-estimation: set camera preview to 640x480
+
+Signed-off-by: David Escalona <david.escalona@digi.com>
+---
+ stai-mpu/stai_mpu_pose_estimation.py | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/stai-mpu/stai_mpu_pose_estimation.py b/stai-mpu/stai_mpu_pose_estimation.py
+index 25d9dd2..e6a0198 100644
+--- a/stai-mpu/stai_mpu_pose_estimation.py
++++ b/stai-mpu/stai_mpu_pose_estimation.py
+@@ -536,12 +536,14 @@ class MainWindow(Gtk.Window):
+         self.video_box = Gtk.HBox()
+         self.video_box.set_name("gui_main_video")
+         if self.app.enable_camera_preview == True:
+             # camera preview => gst stream
+             self.video_widget = self.app.gst_widget
++            self.video_widget.set_size_request(640, 480);
+             self.video_widget.set_app_paintable(True)
+-            self.video_box.pack_start(self.video_widget, True, True, 0)
++            self.video_box.pack_start(self.video_widget, True, False, 0)
++            self.video_box.set_center_widget(self.video_widget)
+         else :
+             # still picture => openCV picture
+             self.image = Gtk.Image()
+             self.video_box.pack_start(self.image, True, True, 0)
+         # setup the exit box which contains the exit button
+@@ -709,14 +711,16 @@ class OverlayWindow(Gtk.Window):
+         # to draw over the video stream
+         self.video_box = Gtk.HBox()
+         self.video_box.set_name("gui_overlay_video")
+         self.video_box.set_app_paintable(True)
+         self.drawing_area = Gtk.DrawingArea()
++        self.drawing_area.set_size_request(640, 480);
+         self.drawing_area.connect("draw", self.drawing)
+         self.drawing_area.set_name("overlay_draw")
+         self.drawing_area.set_app_paintable(True)
+-        self.video_box.pack_start(self.drawing_area, True, True, 0)
++        self.video_box.pack_start(self.drawing_area, True, False, 0)
++        self.video_box.set_center_widget(self.drawing_area)
+ 
+         # setup the exit box which contains the exit button
+         self.exit_box = Gtk.VBox()
+         self.exit_box.set_name("gui_overlay_exit")
+         self.exit_icon_path = RESOURCES_DIRECTORY + 'exit_' + self.ui_icon_exit_size + 'x' +  self.ui_icon_exit_size + '.png'

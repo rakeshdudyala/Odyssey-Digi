@@ -1,0 +1,108 @@
+#!/bin/sh
+#===============================================================================
+#
+#  Copyright (C) 2023,2024, Digi International Inc.
+#  All rights reserved.
+#
+#  This program is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License version 2 as published by
+#  the Free Software Foundation.
+#
+#
+#  !Description: Initialize bluetooth hardware
+#
+#===============================================================================
+
+HCI_IFACE="hci0"
+MODULE_NAME="btnxpuart"
+
+log() {
+	printf "<3>iw61x-bluetooth: %s\n" "${1}" >/dev/kmsg
+}
+
+# The power of the IW61x chip is managed by the WiFi DT entry.
+#  If WiFi is disabled, is needed to manage the power manually.
+is_not_wifi() {
+	! [ -e "/proc/device-tree/wireless/mac-address" ]
+}
+
+power() {
+	is_not_wifi && gpioset 1 7="${1}"
+}
+
+set_btaddr() {
+	hciconfig ${HCI_IFACE} up
+	sleep 0.2
+	bt_addr=$(echo "$(fw_printenv -n btaddr)" | awk -F ":" '{ for(i=NF;i>=1;i--) printf "0x%s ", $i }')
+	hcitool -i ${HCI_IFACE} cmd 0x3f 0x0022 0xfe 0x06 ${bt_addr}
+	hciconfig ${HCI_IFACE} down
+	sleep 0.2
+	hciconfig ${HCI_IFACE} up
+}
+
+set_power_config() {
+	sh -e /lib/firmware/nxp/bt_power_config_US_CA_JP.sh
+}
+
+is_kernel_module_loaded() {
+	lsmod | grep -qs -w "^${MODULE_NAME}"
+}
+
+bluetooth_start() {
+	if ! [ -e "/proc/device-tree/bluetooth/mac-address" ]; then
+		log "[ERROR] Bluetooth mac-address not found"
+		return
+	fi
+
+	# If module is already loaded, skip
+	is_kernel_module_loaded && log "[ERROR] kernel module already present, skipping" && return 1
+
+	power 0 && sleep 0.2 && power 1
+	# Load manually the kernel module
+	modprobe "${MODULE_NAME}"
+	# Reconfigure the HCI interface with the expected MAC address and power levels
+	is_kernel_module_loaded && set_btaddr && set_power_config && log "Bluetooth activated" && return 0
+	log "[ERROR] Cannot initialize Bluetooth correctly" && return 1
+}
+
+is_system_running() {
+	state=$(systemctl is-system-running 2>/dev/null)
+	case "$state" in
+		running|degraded)
+			return 0 ;; # System is operational
+		*)
+			return 1 ;; # Assume not running
+		esac
+}
+
+bluetooth_stop() {
+	#
+	# The btnxpuart driver hits a null pointer dereference on module
+	# unloading when the interface is down. So as a workaround, make
+	# sure the interface is UP before unloading the module.
+	#
+	if is_system_running; then
+		hciconfig "${HCI_IFACE}" up && rmmod "${MODULE_NAME}"
+		power 0
+	else
+		log "System rebooting... not taking any action"
+	fi
+}
+
+
+case "$1" in
+	start)
+		bluetooth_start
+		;;
+	stop)
+		bluetooth_stop
+		;;
+	restart)
+		$0 stop
+		$0 start
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+		;;
+esac

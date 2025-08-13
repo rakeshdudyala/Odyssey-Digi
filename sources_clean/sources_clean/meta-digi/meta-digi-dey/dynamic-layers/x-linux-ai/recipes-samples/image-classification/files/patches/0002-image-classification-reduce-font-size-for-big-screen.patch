@@ -1,0 +1,34 @@
+From: David Escalona <david.escalona@digi.com>
+Date: Mon, 16 Sep 2024 18:43:08 +0200
+Subject: [PATCH 2/3] image-classification: reduce font size for big screens
+
+Signed-off-by: David Escalona <david.escalona@digi.com>
+---
+ .../files/stai-mpu/stai_mpu_image_classification.py       | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/stai-mpu/stai_mpu_image_classification.py b/stai-mpu/stai_mpu_image_classification.py
+index 8b433de..a86fcb0 100644
+--- a/stai-mpu/stai_mpu_image_classification.py
++++ b/stai-mpu/stai_mpu_image_classification.py
+@@ -468,8 +468,8 @@ class MainWindow(Gtk.Window):
+                self.ui_icon_st_size = '160'
+         elif window_constraint <= 1080:
+                #Display 1920x1080
+-               self.ui_cairo_font_size = 33
+-               self.ui_cairo_font_size_label = 48
++               self.ui_cairo_font_size = 23
++               self.ui_cairo_font_size_label = 38
+                self.ui_icon_exit_size = '50'
+                self.ui_icon_st_size = '160'
+
+@@ -640,8 +640,8 @@ class OverlayWindow(Gtk.Window):
+                self.ui_icon_st_size = '160'
+         elif window_constraint <= 1080:
+                #Display 1920x1080
+-               self.ui_cairo_font_size = 33
+-               self.ui_cairo_font_size_label = 48
++               self.ui_cairo_font_size = 23
++               self.ui_cairo_font_size_label = 38
+                self.ui_icon_exit_size = '50'
+                self.ui_icon_st_size = '160'

@@ -1,0 +1,368 @@
+#!/bin/sh
+#===============================================================================
+#
+#  sysinfo
+#
+#  Copyright (C) 2016-2024 by Digi International Inc.
+#  All rights reserved.
+#
+#  This program is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License version 2 as published by
+#  the Free Software Foundation.
+#
+#
+#  !Description: System information gather script
+#
+#===============================================================================
+
+FW_PRINTENV="$(which fw_printenv)"
+
+make_report(){
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-               Uptime               -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	uptime
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-         Firmware version           -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	sed -n 's/^firmware \(.*\)/\1/p' < /etc/sw-versions
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-          Kernel version            -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	uname -a
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-             OS release             -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	if [ -f "/etc/os-release" ]; then
+		cat /etc/os-release
+	else
+		echo "[NOT FOUND] /etc/os-release"
+	fi
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-         Build configurations       -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	if [ -f "/etc/buildinfo" ]; then
+		cat /etc/buildinfo
+	else
+		echo "[NOT FOUND] /etc/buildinfo"
+	fi
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-      U-boot saved environment      -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	if [ -x "${FW_PRINTENV}" ]; then
+		${FW_PRINTENV}
+	else
+		echo "[NOT FOUND] fw_printenv"
+	fi
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-          Linux boot log            -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	dmesg
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-       Log files from /var/log      -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	for f in $(find /var/log/ -name "*.log"); do
+		echo "${f} FILE";
+		echo "---------------------------------------";
+		cat ${f};
+		printf "\n\n"
+	done
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-         /var/log/messages          -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	if [ -f "/var/log/messages" ]; then
+		cat /var/log/messages
+	else
+		echo "[NOT FOUND] /var/log/messages"
+	fi
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-     Linux kernel configuration     -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	if [ -f "/proc/config.gz" ]; then
+		zcat /proc/config.gz
+	else
+		echo "[NOT FOUND] /proc/config.gz"
+	fi
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-         Memory consumption         -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	free
+	printf "\n"
+	cat /proc/meminfo
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-          Running processes         -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	ps -l
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-              Mounts                -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	mount
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-            Opened ports            -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	netstat -n -a -p
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-               Routes               -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	route -n
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-        Network configuration       -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	ifconfig -a
+	printf "\n"
+	ip link show
+	printf "\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-       Wireless configuration       -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	wpa_supplicant -v 2>/dev/null
+	echo ""
+	if [ -f "/etc/wpa_supplicant.conf" ]; then
+		echo "wpa_supplicant.conf:"
+		cat "/etc/wpa_supplicant.conf"
+	else
+		echo "[NOT FOUND] /etc/wpa_supplicant.conf"
+	fi
+	echo ""
+	if [ -f "/etc/wpa_supplicant_p2p.conf" ]; then
+		echo "wpa_supplicant_p2p.conf:"
+		cat "/etc/wpa_supplicant_p2p.conf"
+	else
+		echo "[NOT FOUND] /etc/wpa_supplicant_p2p.conf"
+	fi
+	echo ""
+
+	hostapd -v 2>&1
+	echo ""
+	if [ -f "/etc/hostapd.conf" ]; then
+		echo "hostapd.conf:"
+		cat "/etc/hostapd.conf"
+	else
+		echo "[NOT FOUND] hostapd.conf"
+	fi
+	echo ""
+	if [ -f "/etc/hostapd_wlan0.conf" ]; then
+		echo "hostapd_wlan0.conf:"
+		cat "/etc/hostapd_wlan0.conf"
+	else
+		echo "[NOT FOUND] /etc/hostapd_wlan0.conf"
+	fi
+	echo ""
+	if [ -f "/etc/hostapd_wlan1.conf" ]; then
+		echo "hostapd_wlan1.conf:"
+		cat "/etc/hostapd_wlan1.conf"
+	else
+		echo "[NOT FOUND] /etc/hostapd_wlan1.conf"
+	fi
+	printf "\n\n"
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-             OTP values             -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+	if grep -qs '\<digi,ccimx8x\>' /proc/device-tree/compatible; then
+		OTP_PATH="/sys/devices/platform/scu/scu\:imx8qx-ocotp/imx-scu-ocotp0"
+	else
+		OTP_PATH="/sys/bus/nvmem/devices/imx-ocotp0"
+	fi
+
+	if [ -e ${OTP_PATH}/nvmem ]; then
+		echo "${OTP_PATH}:"
+		hexdump -C -v ${OTP_PATH}/nvmem
+		echo ""
+	fi
+
+	echo "--------------------------------------"
+	echo "-                                    -"
+	echo "-             TrustFence             -"
+	echo "-                                    -"
+	echo "--------------------------------------"
+	echo ""
+
+	if grep -qs '\<digi,ccimx8\(x\|m\)\>' /proc/device-tree/compatible; then
+		if [ -f "/proc/device-tree/digi,tf-closed" ]; then
+			echo "Security status: [CLOSED]"
+		elif [ -f "/proc/device-tree/digi,tf-open" ]; then
+			echo "Security status: [OPEN]"
+		fi
+	else
+		if [ -e ${OTP_PATH}/nvmem ]; then
+			# Check SEC_CONFIG on OCOTP_CFG5 (ADDR=6) bit 1.
+			SEC_CONFIG_WORD=$(dd if=${OTP_PATH}/nvmem of=/dev/stdout bs=4 skip=6 count=1 status=none | hexdump -n 4 -v -e '1/4 "0x%08x\n"')
+			if [ "$((${SEC_CONFIG_WORD} & 0x2))" != "0" ]; then
+				echo "Security status: [CLOSED]"
+			else
+				echo "Security status: [OPEN]"
+			fi
+		else
+			echo "Security status: [UNKNOWN]"
+		fi
+	fi
+
+	if [ -f "/proc/device-tree/digi,uboot-env,encrypted" ]; then
+		echo "U-Boot environment is encrypted"
+	else
+		echo "U-Boot environment is NOT encrypted"
+	fi
+
+	echo "-------------End of report------------"
+}
+
+
+DISTRO="$(sed -ne 's,DISTRO = \(.*\)$,\1,g;T;p' /etc/buildinfo)"
+DEY_VERSION="$(sed -ne 's,DISTRO_VERSION = \(.*\)$,\1,g;T;p' /etc/buildinfo)"
+UBOOT_VERSION="$(cat /proc/device-tree/digi,uboot,version 2>/dev/null | tr -d '\0')"
+if [ -z "${UBOOT_VERSION}" ]; then
+	UBOOT_PARTITION="/dev/mmcblk0boot0"
+	[ -c "/dev/mtd0" ] && UBOOT_PARTITION="/dev/mtd0"
+	UBOOT_VERSION="$(strings ${UBOOT_PARTITION} | grep -m 1 dub | cut -d' ' -f2)"
+fi
+MACHINE="$(cat /proc/device-tree/compatible | tr '\0' '\t' | cut -f 1)"
+if grep -qs 'DVK' /proc/device-tree/model; then
+	BOARD_TYPE="DVK"
+else
+	BOARD_TYPE="SBC"
+fi
+BOARD_VARIANT="$(cat /proc/device-tree/digi,hwid,variant | tr -d '\0')"
+BOARD_SN="$(cat /proc/device-tree/digi,hwid,sn | tr -d '\0')"
+BOARD_VERSION="$(cat /proc/device-tree/digi,carrierboard,version | tr -d '\0')"
+[ -e "/proc/device-tree/digi,carrierboard,id" ] && BOARD_ID="$(cat /proc/device-tree/digi,carrierboard,id | tr -d '\0')"
+[ -e "/proc/device-tree/cpus/rev" ] && SOC_REV="$(cat /proc/device-tree/cpus/rev | tr -d '\0')"
+
+if grep -qs '\<digi,ccimx6ul\>' /proc/device-tree/compatible; then
+	MCA_NODE="/sys/bus/i2c/devices/0-007e"
+elif grep -qs '\<digi,ccimx8\(x\|m\)\>' /proc/device-tree/compatible; then
+	MCA_NODE="/sys/bus/i2c/devices/0-0063"
+fi
+if [ -d "$MCA_NODE" ]; then
+	MCA_HW_VERSION=$(cat ${MCA_NODE}/hw_version 2>/dev/null | tr -d '\0') || MCA_HW_VERSION="??"
+	MCA_FW_VERSION=$(cat ${MCA_NODE}/fw_version 2>/dev/null | tr -d '\0') || MCA_FW_VERSION="??"
+	MCA_VERSION="HW_VERSION=${MCA_HW_VERSION}  FW_VERSION=${MCA_FW_VERSION}"
+fi
+
+IOEXP_NODE="/sys/bus/i2c/devices/0-006e"
+if [ -d "$IOEXP_NODE" ]; then
+	IOEXP_HW_VERSION=$(cat ${IOEXP_NODE}/hw_version 2>/dev/null | tr -d '\0') || IOEXP_HW_VERSION="??"
+	IOEXP_FW_VERSION=$(cat ${IOEXP_NODE}/fw_version 2>/dev/null | tr -d '\0') || IOEXP_FW_VERSION="??"
+	IOEXP_VERSION="HW_VERSION=${IOEXP_HW_VERSION}  FW_VERSION=${IOEXP_FW_VERSION}"
+fi
+
+DATE="$(date "+%Y%m%d%H%M%S")"
+REPORT_PATH="/tmp/sysinfo-${DEY_VERSION}-${BOARD_SN}-${DATE}"
+
+(
+	echo "-------------------------------------"
+	echo "-                                   -"
+	echo "-         ENVIRONMENT TABLE         -"
+	echo "-                                   -"
+	echo "-------------------------------------"
+	echo ""
+
+	echo "|||:Component|:Version"
+	DUT_HEADER="SN-${BOARD_SN}, ${MACHINE} ${BOARD_VARIANT} ${BOARD_TYPE}v${BOARD_VERSION}"
+	if [ -n "${BOARD_ID}" ]; then
+		DUT_HEADER="${DUT_HEADER} board_ID=${BOARD_ID}"
+	fi
+	if [ -n "${SOC_REV}" ]; then
+		DUT_HEADER="${DUT_HEADER} SOC_REV=${SOC_REV}"
+	fi
+	echo "|| DUT | ${DUT_HEADER}"
+	echo "|| U-Boot | ${UBOOT_VERSION}"
+	echo "|| Firmware version | $(sed -n 's/^firmware \(.*\)/\1/p' < /etc/sw-versions)"
+	echo "|| DEY version | ${DISTRO}-${DEY_VERSION}-$(cat /etc/version)"
+	echo "|| Kernel | $(uname -a)"
+	echo "|| meta-digi | $(sed -ne '/^meta-digi-dey/s,.*= \(.*\)$,\1,g;T;p' /etc/buildinfo)"
+	[ -n "${MCA_VERSION}" ] && echo "|| MCA | ${MCA_VERSION}"
+	[ -n "${IOEXP_VERSION}" ] && echo "|| I/O Expander | ${IOEXP_VERSION}"
+	printf "\n\n"
+) | tee "${REPORT_PATH}.txt"
+
+make_report >> "${REPORT_PATH}.txt"
+tar -zhcf "${REPORT_PATH}.tar.gz" -C $(dirname ${REPORT_PATH}) $(basename "${REPORT_PATH}.txt") /proc/device-tree 2> /dev/null
+echo "Report generated in ${REPORT_PATH}.tar.gz"
+
+rm -rf "${REPORT_PATH}.txt"

@@ -1,0 +1,35 @@
+From: David Escalona <david.escalona@digi.com>
+Date: Mon, 16 Sep 2024 18:59:12 +0200
+Subject: [PATCH 3/4] semantic-segmentation: adapt sample for root user
+
+Signed-off-by: David Escalona <david.escalona@digi.com>
+---
+ .../files/stai-mpu/stai_mpu_semantic_segmentation.py        | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/stai-mpu/stai_mpu_semantic_segmentation.py b/stai-mpu/stai_mpu_semantic_segmentation.py
+index 35b8bea..68d554b 100644
+--- a/stai-mpu/stai_mpu_semantic_segmentation.py
++++ b/stai-mpu/stai_mpu_semantic_segmentation.py
+@@ -884,10 +884,10 @@ class OverlayWindow(Gtk.Window):
+             size = (int(preview_width),int(preview_height))
+             img = img.resize(size)
+             img_alpha = img.copy()
+-            img_alpha.save("/home/weston/bitmap.png","PNG")
++            img_alpha.save(os.path.join(os.path.expanduser("~"), "bitmap.png"), "PNG")
+
+             #load the bitmap to display it as overlay
+-            pixbuf = GdkPixbuf.Pixbuf.new_from_file('/home/weston/bitmap.png')
++            pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(os.path.expanduser("~"), "bitmap.png"))
+             img = Gdk.cairo_set_source_pixbuf(cr, pixbuf.copy(),int(offset), int(vertical_offset))
+             cr.paint()
+             if (self.app.enable_camera_preview == False):
+@@ -1392,7 +1392,7 @@ if __name__ == '__main__':
+     Gtk.main()
+     #remove bitmap.png file before closing app
+     file = 'bitmap.png'
+-    location = "/home/weston"
++    location = os.path.expanduser("~")
+     path = os.path.join(location,file)
+     os.remove(path)
+     print("gtk main finished")

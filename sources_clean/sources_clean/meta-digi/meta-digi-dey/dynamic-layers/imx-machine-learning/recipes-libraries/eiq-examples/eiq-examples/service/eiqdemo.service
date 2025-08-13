@@ -1,0 +1,12 @@
+[Unit]
+Description=Initialization of EiQ DMS demo
+After=graphical.target
+ConditionPathExists=/dev/video0
+
+[Service]
+Type=exec
+RemainAfterExit=yes
+ExecStart=/etc/demos/scripts/launch_eiq_demo.sh
+
+[Install]
+WantedBy=graphical.target
